@@ -4,8 +4,8 @@ from pathlib import Path
 
 
 PROJECT_DIRECTORY = Path(__file__).resolve().parent
-SOURCE_DIRECTORY = PROJECT_DIRECTORY / "translations"
-OUTPUT_DIRECTORY = PROJECT_DIRECTORY / "lang"
+SOURCE_DIRECTORY = PROJECT_DIRECTORY / "lang"
+OUTPUT_DIRECTORY = SOURCE_DIRECTORY / "bin"
 
 
 def parse_po(path):

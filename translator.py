@@ -8,6 +8,7 @@ DEFAULT_LANGUAGE = "en"
 LANG_DIRECTORY = (
     Path(__file__).resolve().parent
     / "lang"
+    / "bin"
 )
 LOGGER = logging.getLogger(
     "SegmentDownloader.translator"

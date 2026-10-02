@@ -1,3 +1,5 @@
+# English translations
+
 msgid ""
 msgstr ""
 "Project-Id-Version: Segment Downloader 1.0\n"

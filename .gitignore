@@ -5,8 +5,6 @@ __pycache__/
 
 # Other
 Output/
-!lang/
-!lang/*.mo
 
 # C extensions
 *.so
@@ -59,6 +57,7 @@ cover/
 
 # Translations
 *.mo
+!lang/bin/*.mo
 *.pot
 
 # Django stuff:
