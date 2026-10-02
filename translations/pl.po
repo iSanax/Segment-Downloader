@@ -1,0 +1,126 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Segment Downloader 1.0\n"
+"Language: pl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "BROWSE..."
+msgstr "WYBIERZ..."
+
+msgid "Checking file..."
+msgstr "Sprawdzanie pliku..."
+
+msgid "Clearing temporary files..."
+msgstr "Czyszczenie plików tymczasowych..."
+
+msgid "Could not determine the file size."
+msgstr "Nie udało się ustalić rozmiaru pliku."
+
+msgid "DOWNLOAD"
+msgstr "POBIERZ"
+
+msgid "Done"
+msgstr "Gotowe"
+
+msgid "Download completed"
+msgstr "Pobieranie zakończone"
+
+msgid "Download error"
+msgstr "Błąd pobierania"
+
+msgid "Downloading - {segment_count} segments"
+msgstr "Pobieranie - {segment_count} segmentów"
+
+msgid "Enter the file URL."
+msgstr "Podaj URL pliku."
+
+msgid "Enter the file extension."
+msgstr "Podaj rozszerzenie pliku."
+
+msgid "Enter the file name."
+msgstr "Podaj nazwę pliku."
+
+msgid "Error"
+msgstr "Błąd"
+
+msgid "Extension:"
+msgstr "Rozszerzenie:"
+
+msgid "File URL:"
+msgstr "URL pliku:"
+
+msgid "File name:"
+msgstr "Nazwa pliku:"
+
+msgid "Final file size is incorrect: {actual_size} != {expected_size}"
+msgstr "Końcowy rozmiar pliku jest nieprawidłowy: {actual_size} != {expected_size}"
+
+msgid "Language:"
+msgstr "Język:"
+
+msgid "Merging segments..."
+msgstr "Łączenie segmentów..."
+
+msgid "Missing segment: {path}"
+msgstr "Brak segmentu: {path}"
+
+msgid "Output directory:"
+msgstr "Folder docelowy:"
+
+msgid "Ready"
+msgstr "Gotowy"
+
+msgid "Segment Downloader"
+msgstr "Segment Downloader"
+
+msgid "Segment size (KB):"
+msgstr "Rozmiar segmentu (KB):"
+
+msgid "Segment {index}: expected {expected_size} bytes, received {actual_size}."
+msgstr "Segment {index}: oczekiwano {expected_size} bajtów, otrzymano {actual_size}."
+
+msgid "Segment {index}: incomplete response. Downloaded {actual_size} / {expected_size} bytes."
+msgstr "Segment {index}: niepełna odpowiedź. Pobrano {actual_size} / {expected_size} bajtów."
+
+msgid "Segment {index}: invalid Content-Range. Expected {start}-{end}, received: {received}"
+msgstr "Segment {index}: nieprawidłowy Content-Range. Oczekiwano {start}-{end}, otrzymano: {received}"
+
+msgid "Select an output directory."
+msgstr "Wybierz folder docelowy."
+
+msgid "Select output directory"
+msgstr "Wybierz folder docelowy"
+
+msgid "Starting..."
+msgstr "Uruchamianie..."
+
+msgid "Status:"
+msgstr "Status:"
+
+msgid "The file name and extension cannot contain path separators."
+msgstr "Nazwa i rozszerzenie pliku nie mogą zawierać separatorów ścieżki."
+
+msgid "The file was downloaded:\n\n{path}"
+msgstr "Plik został pobrany:\n\n{path}"
+
+msgid "The output directory cannot be located inside the temporary directory."
+msgstr "Folder docelowy nie może znajdować się wewnątrz katalogu tymczasowego."
+
+msgid "The segment size must be an integer greater than 0."
+msgstr "Rozmiar segmentu musi być liczbą całkowitą większą od 0."
+
+msgid "The server rejected the range request. HTTP {status_code}"
+msgstr "Serwer odrzucił żądanie zakresu. HTTP {status_code}"
+
+msgid "The server returned HTTP 206 without a Content-Range header."
+msgstr "Serwer zwrócił HTTP 206 bez nagłówka Content-Range."
+
+msgid "The temporary directory path is invalid."
+msgstr "Ścieżka katalogu tymczasowego jest nieprawidłowa."
+
+msgid "The thread count must be an integer greater than 0."
+msgstr "Liczba wątków musi być liczbą całkowitą większą od 0."
+
+msgid "Thread count:"
+msgstr "Liczba wątków:"
