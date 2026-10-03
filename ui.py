@@ -5,6 +5,7 @@ from tkinter import filedialog, messagebox, ttk
 from downloadManager import DownloadCancelled, DownloadManager
 from logger import get_logger
 from settings import SettingsManager
+from temporaryFiles import TemporaryFilesManager
 from translator import set_language, translate as _
 
 
@@ -37,6 +38,11 @@ class DownloadApp:
         self.settings_manager = SettingsManager()
         saved_settings = self.settings_manager.load()
         self.__settings_save_job = None
+        self.__temp_size_job = None
+        self.__temp_size_scan_running = False
+        self.__temp_clear_running = False
+        self.__temp_size_bytes = None
+        self.temp_files_manager = TemporaryFilesManager()
 
         selected_language = set_language(
             saved_settings["language"]
@@ -87,6 +93,10 @@ class DownloadApp:
             value="0.00%"
         )
 
+        self.temp_size_var = tk.StringVar(
+            value=_("Temporary files: calculating...")
+        )
+
         self.activity_messages = []
 
         self.__input_variables = {
@@ -101,6 +111,9 @@ class DownloadApp:
 
         self.__create_ui()
         self.__watch_settings()
+        self.__schedule_temp_size_refresh(
+            delay=0
+        )
 
         self.root.protocol(
             "WM_DELETE_WINDOW",
@@ -194,22 +207,108 @@ class DownloadApp:
         )
 
         # Nazwa
+        name_row = ttk.Frame(
+            main
+        )
+
+        name_row.pack(
+            fill="x",
+            pady=(0, 15)
+        )
+
+        name_row.columnconfigure(
+            0,
+            weight=1
+        )
+
         ttk.Label(
-            main,
+            name_row,
             text=_("File name:")
-        ).pack(
-            anchor="w"
+        ).grid(
+            row=0,
+            column=0,
+            sticky="w"
         )
 
         self.name_entry = ttk.Entry(
-            main,
+            name_row,
             textvariable=self.file_name_var
         )
 
-        self.name_entry.pack(
-            fill="x",
-            pady=(5, 15),
+        self.name_entry.grid(
+            row=1,
+            column=0,
+            sticky="nsew",
+            pady=(5, 0),
             ipady=5
+        )
+
+        temp_controls = ttk.Frame(
+            name_row
+        )
+
+        temp_controls.grid(
+            row=0,
+            column=1,
+            rowspan=2,
+            sticky="nsew",
+            padx=(10, 0)
+        )
+
+        temp_controls.rowconfigure(
+            1,
+            weight=1
+        )
+
+        temp_controls.columnconfigure(
+            0,
+            weight=1,
+            uniform="temp_buttons"
+        )
+
+        temp_controls.columnconfigure(
+            1,
+            weight=1,
+            uniform="temp_buttons"
+        )
+
+        ttk.Label(
+            temp_controls,
+            textvariable=self.temp_size_var,
+            anchor="w"
+        ).grid(
+            row=0,
+            column=0,
+            columnspan=2,
+            sticky="w",
+            pady=(0, 5)
+        )
+
+        self.open_temp_button = ttk.Button(
+            temp_controls,
+            text=_("OPEN"),
+            command=self.__open_temporary_directory
+        )
+
+        self.open_temp_button.grid(
+            row=1,
+            column=0,
+            sticky="nsew",
+            padx=(0, 5),
+            ipady=3
+        )
+
+        self.clear_temp_button = ttk.Button(
+            temp_controls,
+            text=_("CLEAR"),
+            command=self.__clear_temporary_files
+        )
+
+        self.clear_temp_button.grid(
+            row=1,
+            column=1,
+            sticky="nsew",
+            ipady=3
         )
 
         # Opcje
@@ -351,7 +450,7 @@ class DownloadApp:
 
         ttk.Button(
             output_frame,
-            text=_("BROWSE..."),
+            text=_("BROWSE"),
             command=self.__choose_output_directory
         ).pack(
             side="right",
@@ -513,10 +612,17 @@ class DownloadApp:
 
         self.activity_messages.clear()
 
+        self.temp_size_var.set(
+            _("Temporary files: calculating...")
+        )
+
         for widget in self.root.winfo_children():
             widget.destroy()
 
         self.__create_ui()
+        self.__schedule_temp_size_refresh(
+            delay=0
+        )
 
         LOGGER.info(
             "Interface language changed to %s.",
@@ -539,6 +645,194 @@ class DownloadApp:
                 "Output directory selected: %s.",
                 selected_directory
             )
+
+    def __open_temporary_directory(self):
+        try:
+            self.temp_files_manager.open()
+
+        except (OSError, RuntimeError) as error:
+            LOGGER.error(
+                "Failed to open the temporary directory (%s).",
+                type(error).__name__
+            )
+
+            messagebox.showerror(
+                _("Error"),
+                _(
+                    "Could not open the temporary directory: {error}"
+                ).format(
+                    error=error
+                )
+            )
+
+    def __clear_temporary_files(self):
+        if self.downloading or self.__temp_clear_running:
+            return
+
+        confirmed = messagebox.askyesno(
+            _("Clear temporary files"),
+            _(
+                "Delete all temporary download files?\n\n"
+                "Saved progress for unfinished downloads will be lost."
+            ),
+            parent=self.root
+        )
+
+        if not confirmed:
+            return
+
+        self.__temp_clear_running = True
+        self.temp_size_var.set(
+            _("Temporary files: clearing...")
+        )
+        self.__update_download_controls()
+
+        thread = threading.Thread(
+            target=self.__clear_temporary_files_worker,
+            daemon=True
+        )
+        thread.start()
+
+    def __clear_temporary_files_worker(self):
+        try:
+            self.temp_files_manager.clear()
+
+        except (OSError, RuntimeError) as error:
+            LOGGER.error(
+                "Failed to clear temporary files (%s).",
+                type(error).__name__
+            )
+
+            self.__schedule_ui(
+                self.__temporary_files_clear_failed,
+                str(error)
+            )
+
+        else:
+            self.__schedule_ui(
+                self.__temporary_files_cleared
+            )
+
+    def __temporary_files_cleared(self):
+        self.__temp_clear_running = False
+        self.__temp_size_bytes = 0
+        self.temp_size_var.set(
+            _("Temporary files: {size}").format(
+                size=self.__format_file_size(0)
+            )
+        )
+        self.__update_download_controls()
+        self.__schedule_temp_size_refresh(
+            delay=0
+        )
+
+        messagebox.showinfo(
+            _("Clear temporary files"),
+            _("Temporary files were deleted."),
+            parent=self.root
+        )
+
+    def __temporary_files_clear_failed(self, error):
+        self.__temp_clear_running = False
+        self.__update_download_controls()
+        self.__schedule_temp_size_refresh(
+            delay=0
+        )
+
+        messagebox.showerror(
+            _("Error"),
+            _(
+                "Could not clear temporary files: {error}"
+            ).format(
+                error=error
+            ),
+            parent=self.root
+        )
+
+    def __schedule_temp_size_refresh(self, delay=3000):
+        if self.closing:
+            return
+
+        if self.__temp_size_job is not None:
+            try:
+                self.root.after_cancel(
+                    self.__temp_size_job
+                )
+
+            except tk.TclError:
+                pass
+
+        self.__temp_size_job = self.root.after(
+            delay,
+            self.__refresh_temp_size
+        )
+
+    def __refresh_temp_size(self):
+        self.__temp_size_job = None
+
+        if (
+            not self.__temp_size_scan_running
+            and not self.__temp_clear_running
+        ):
+            self.__temp_size_scan_running = True
+
+            thread = threading.Thread(
+                target=self.__temp_size_worker,
+                daemon=True
+            )
+            thread.start()
+
+        self.__schedule_temp_size_refresh()
+
+    def __temp_size_worker(self):
+        try:
+            size = self.temp_files_manager.calculate_size()
+
+        except (OSError, RuntimeError) as error:
+            LOGGER.error(
+                "Failed to calculate temporary file size (%s).",
+                type(error).__name__
+            )
+            size = None
+
+        self.__schedule_ui(
+            self.__apply_temp_size,
+            size
+        )
+
+    def __apply_temp_size(self, size):
+        self.__temp_size_scan_running = False
+
+        if self.__temp_clear_running:
+            return
+
+        self.__temp_size_bytes = size
+
+        if size is None:
+            text = _("Temporary files: unavailable")
+
+        else:
+            text = _("Temporary files: {size}").format(
+                size=self.__format_file_size(size)
+            )
+
+        self.temp_size_var.set(
+            text
+        )
+
+    @staticmethod
+    def __format_file_size(size):
+        units = ("B", "KB", "MB", "GB", "TB")
+        value = float(size)
+
+        for unit in units:
+            if value < 1024 or unit == units[-1]:
+                if unit == "B":
+                    return f"{int(value)} {unit}"
+
+                return f"{value:.1f} {unit}"
+
+            value /= 1024
 
     def __watch_settings(self):
         for variable in self.__input_variables.values():
@@ -592,6 +886,11 @@ class DownloadApp:
                 self.__settings_save_job
             )
 
+        if self.__temp_size_job is not None:
+            self.root.after_cancel(
+                self.__temp_size_job
+            )
+
         self.__save_settings()
 
         LOGGER.info(
@@ -601,7 +900,7 @@ class DownloadApp:
         self.root.destroy()
 
     def start_download(self):
-        if self.downloading:
+        if self.downloading or self.__temp_clear_running:
             return
 
         url = self.url_var.get().strip()
@@ -800,7 +1099,7 @@ class DownloadApp:
         self.download_button.config(
             state=(
                 "disabled"
-                if self.downloading
+                if self.downloading or self.__temp_clear_running
                 else "normal"
             )
         )
@@ -818,6 +1117,22 @@ class DownloadApp:
                 "disabled"
                 if self.downloading
                 else "readonly"
+            )
+        )
+
+        self.clear_temp_button.config(
+            state=(
+                "disabled"
+                if self.downloading or self.__temp_clear_running
+                else "normal"
+            )
+        )
+
+        self.open_temp_button.config(
+            state=(
+                "disabled"
+                if self.__temp_clear_running
+                else "normal"
             )
         )
 
@@ -983,6 +1298,9 @@ class DownloadApp:
         self.cancel_event = None
         self.download_manager = None
         self.__update_download_controls()
+        self.__schedule_temp_size_refresh(
+            delay=0
+        )
 
     def __clear_activity(self):
         self.activity_messages.clear()

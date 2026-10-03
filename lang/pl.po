@@ -7,8 +7,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "BROWSE..."
-msgstr "WYBIERZ..."
+msgid "BROWSE"
+msgstr "WYBIERZ"
 
 msgid "Checking file..."
 msgstr "Sprawdzanie pliku..."
@@ -228,3 +228,42 @@ msgstr "Pobieranie jednym połączeniem: próba {attempt}..."
 
 msgid "Download attempt {attempt} failed ({error}). Retrying in {seconds} s..."
 msgstr "Próba pobierania {attempt} nie powiodła się ({error}). Ponawianie za {seconds} s..."
+
+msgid "Temporary files: calculating..."
+msgstr "Pliki tymczasowe: obliczanie..."
+
+msgid "Temporary files: clearing..."
+msgstr "Pliki tymczasowe: czyszczenie..."
+
+msgid "Temporary files: {size}"
+msgstr "Pliki tymczasowe: {size}"
+
+msgid "Temporary files: unavailable"
+msgstr "Pliki tymczasowe: niedostępne"
+
+msgid "OPEN"
+msgstr "OTWÓRZ"
+
+msgid "CLEAR"
+msgstr "WYCZYŚĆ"
+
+msgid "Clear temporary files"
+msgstr "Wyczyść pliki tymczasowe"
+
+msgid ""
+"Delete all temporary download files?\n"
+"\n"
+"Saved progress for unfinished downloads will be lost."
+msgstr ""
+"Usunąć wszystkie tymczasowe pliki pobierania?\n"
+"\n"
+"Zapisany postęp niedokończonych pobrań zostanie utracony."
+
+msgid "Temporary files were deleted."
+msgstr "Pliki tymczasowe zostały usunięte."
+
+msgid "Could not clear temporary files: {error}"
+msgstr "Nie udało się usunąć plików tymczasowych: {error}"
+
+msgid "Could not open the temporary directory: {error}"
+msgstr "Nie udało się otworzyć folderu plików tymczasowych: {error}"
