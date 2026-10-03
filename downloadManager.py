@@ -211,9 +211,36 @@ class DownloadManager:
 
         self.__check_cancelled()
 
-        full_file_name = file_name + file_extension
+        requested_file_name = file_name + file_extension
         output_directory = Path(path).expanduser().resolve()
-        final_path = output_directory / full_file_name
+
+        output_directory.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        final_path = self.__available_output_path(
+            output_directory=output_directory,
+            file_name=file_name,
+            file_extension=file_extension
+        )
+        full_file_name = final_path.name
+
+        if full_file_name != requested_file_name:
+            self.__set_activity(
+                _(
+                    "The output file already exists. "
+                    "Saving as {file_name}."
+                ).format(
+                    file_name=full_file_name
+                )
+            )
+
+            LOGGER.info(
+                "Output file already exists; selected available "
+                "name: %s.",
+                full_file_name
+            )
 
         LOGGER.info(
             "Download started: file=%s, threads=%d, "
@@ -222,11 +249,6 @@ class DownloadManager:
             thread_count,
             segment_size_kb,
             output_directory
-        )
-
-        output_directory.mkdir(
-            parents=True,
-            exist_ok=True
         )
 
         temporary_directory = self.__prepare_temporary_directory(
@@ -373,6 +395,29 @@ class DownloadManager:
                     "path separators."
                 )
             )
+
+    def __available_output_path(
+        self,
+        output_directory,
+        file_name,
+        file_extension
+    ):
+        candidate = (
+            output_directory
+            / f"{file_name}{file_extension}"
+        )
+
+        if not candidate.exists() and not candidate.is_symlink():
+            return candidate
+
+        for number in count(1):
+            candidate = (
+                output_directory
+                / f"{file_name} ({number}){file_extension}"
+            )
+
+            if not candidate.exists() and not candidate.is_symlink():
+                return candidate
 
     def __prepare_temporary_directory(
         self,

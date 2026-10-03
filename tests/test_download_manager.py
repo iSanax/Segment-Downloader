@@ -229,6 +229,14 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
             Path(final_path).read_bytes(),
             TEST_DATA
         )
+        self.assertEqual(
+            Path(final_path).name,
+            "result (1).bin"
+        )
+        self.assertEqual(
+            output_path.read_bytes(),
+            b"existing file"
+        )
         self.assertIn(
             "Found previous partial download. Resuming...",
             second_activities
@@ -237,6 +245,46 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
             any(
                 "was already downloaded" in message
                 for message in second_activities
+            )
+        )
+
+    def test_existing_output_gets_next_available_windows_style_name(self):
+        self.output_directory.mkdir(
+            parents=True
+        )
+        (self.output_directory / "duplicate.bin").write_bytes(
+            b"existing"
+        )
+        (self.output_directory / "duplicate (1).bin").write_bytes(
+            b"existing copy"
+        )
+        activities = []
+        manager = DownloadManager(
+            activity_callback=activities.append
+        )
+
+        with download_server() as url:
+            final_path = manager.run(
+                path=self.output_directory,
+                segment_size_kb=8,
+                thread_count=1,
+                file_name="duplicate",
+                file_extension=".bin",
+                url=url
+            )
+
+        self.assertEqual(
+            Path(final_path).name,
+            "duplicate (2).bin"
+        )
+        self.assertEqual(
+            Path(final_path).read_bytes(),
+            TEST_DATA
+        )
+        self.assertTrue(
+            any(
+                "Saving as duplicate (2).bin" in message
+                for message in activities
             )
         )
 

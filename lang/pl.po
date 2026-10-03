@@ -267,3 +267,6 @@ msgstr "Nie udało się usunąć plików tymczasowych: {error}"
 
 msgid "Could not open the temporary directory: {error}"
 msgstr "Nie udało się otworzyć folderu plików tymczasowych: {error}"
+
+msgid "The output file already exists. Saving as {file_name}."
+msgstr "Plik wynikowy już istnieje. Zapisywanie jako {file_name}."
