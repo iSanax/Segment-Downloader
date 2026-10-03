@@ -153,3 +153,78 @@ msgstr "Segment {index}/{segment_count}: próba {attempt}/{retries} nie powiodł
 
 msgid "Download stopped: {error}"
 msgstr "Pobieranie zatrzymane: {error}"
+
+msgid "CANCEL"
+msgstr "ANULUJ"
+
+msgid "Cancelling download..."
+msgstr "Anulowanie pobierania..."
+
+msgid "Download cancelled"
+msgstr "Pobieranie anulowane"
+
+msgid "Download cancelled."
+msgstr "Pobieranie anulowane."
+
+msgid "Download cancelled. Reusable segments were preserved."
+msgstr "Pobieranie anulowane. Segmenty możliwe do wznowienia zostały zachowane."
+
+msgid "The server does not support segmented downloads. Using one connection."
+msgstr "Serwer nie obsługuje pobierania segmentowego. Używanie jednego połączenia."
+
+msgid "Server check failed ({error}). Retrying in {seconds} s..."
+msgstr "Sprawdzenie serwera nie powiodło się ({error}). Ponawianie za {seconds} s..."
+
+msgid "Server returned HTTP {status_code}."
+msgstr "Serwer zwrócił HTTP {status_code}."
+
+msgid "The server returned HTTP 206 without a valid Content-Range header."
+msgstr "Serwer zwrócił HTTP 206 bez prawidłowego nagłówka Content-Range."
+
+msgid "Previous partial download does not match the remote file. Starting over."
+msgstr "Poprzednie części nie pasują do pliku na serwerze. Rozpoczynanie od początku."
+
+msgid "Found previous partial download. Resuming..."
+msgstr "Znaleziono poprzednie części pliku. Wznawianie..."
+
+msgid "Not enough free disk space. Required: {required}, available: {available}."
+msgstr "Za mało wolnego miejsca na dysku. Wymagane: {required}, dostępne: {available}."
+
+msgid "Segment {index}/{segment_count}: attempt {attempt}/{retries} failed ({error}). Retrying in {seconds} s..."
+msgstr "Segment {index}/{segment_count}: próba {attempt}/{retries} nie powiodła się ({error}). Ponawianie za {seconds} s..."
+
+msgid "The remote file changed during download. Start the download again."
+msgstr "Plik na serwerze zmienił się podczas pobierania. Uruchom pobieranie ponownie."
+
+msgid "Invalid Content-Range. Expected: {expected}, received: {received}."
+msgstr "Nieprawidłowy Content-Range. Oczekiwano: {expected}, otrzymano: {received}."
+
+msgid "Incomplete response. Downloaded {actual_size} / {expected_size} bytes."
+msgstr "Niepełna odpowiedź. Pobrano {actual_size} / {expected_size} bajtów."
+
+msgid "The file was already downloaded. Preparing output..."
+msgstr "Plik został już pobrany. Przygotowywanie pliku wynikowego..."
+
+msgid "Downloading with one connection: attempt {attempt}/{retries}..."
+msgstr "Pobieranie jednym połączeniem: próba {attempt}/{retries}..."
+
+msgid "Download attempt {attempt}/{retries} failed ({error}). Retrying in {seconds} s..."
+msgstr "Próba pobierania {attempt}/{retries} nie powiodła się ({error}). Ponawianie za {seconds} s..."
+
+msgid "Missing or incomplete segment: {index}"
+msgstr "Brakujący lub niepełny segment: {index}"
+
+msgid "The temporary output path is not a file: {path}"
+msgstr "Tymczasowa ścieżka wynikowa nie jest plikiem: {path}"
+
+msgid "Segment {index}/{segment_count}: request attempt {attempt}..."
+msgstr "Segment {index}/{segment_count}: próba połączenia {attempt}..."
+
+msgid "Segment {index}/{segment_count}: attempt {attempt} failed ({error}). Retrying in {seconds} s..."
+msgstr "Segment {index}/{segment_count}: próba {attempt} nie powiodła się ({error}). Ponawianie za {seconds} s..."
+
+msgid "Downloading with one connection: attempt {attempt}..."
+msgstr "Pobieranie jednym połączeniem: próba {attempt}..."
+
+msgid "Download attempt {attempt} failed ({error}). Retrying in {seconds} s..."
+msgstr "Próba pobierania {attempt} nie powiodła się ({error}). Ponawianie za {seconds} s..."

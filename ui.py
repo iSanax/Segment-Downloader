@@ -2,7 +2,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from downloadManager import DownloadManager
+from downloadManager import DownloadCancelled, DownloadManager
 from logger import get_logger
 from settings import SettingsManager
 from translator import set_language, translate as _
@@ -29,6 +29,10 @@ class DownloadApp:
         )
 
         self.downloading = False
+        self.cancel_requested = False
+        self.cancel_event = None
+        self.download_manager = None
+        self.closing = False
 
         self.settings_manager = SettingsManager()
         saved_settings = self.settings_manager.load()
@@ -355,18 +359,55 @@ class DownloadApp:
             ipady=5
         )
 
-        # Przycisk
+        # Przyciski
+        actions = ttk.Frame(
+            main
+        )
+
+        actions.pack(
+            fill="x",
+            pady=(0, 25)
+        )
+
+        actions.columnconfigure(
+            0,
+            weight=3
+        )
+
+        actions.columnconfigure(
+            1,
+            weight=1
+        )
+
         self.download_button = ttk.Button(
-            main,
+            actions,
             text=_("DOWNLOAD"),
             command=self.start_download
         )
 
-        self.download_button.pack(
-            fill="x",
+        self.download_button.grid(
+            row=0,
+            column=0,
+            sticky="ew",
             ipady=8,
-            pady=(0, 25)
+            padx=(0, 5)
         )
+
+        self.cancel_button = ttk.Button(
+            actions,
+            text=_("CANCEL"),
+            command=self.__cancel_download
+        )
+
+        self.cancel_button.grid(
+            row=0,
+            column=1,
+            sticky="ew",
+            ipady=8,
+            padx=(5, 0)
+        )
+
+        self.__update_download_controls()
 
         # Pasek
         self.progress = ttk.Progressbar(
@@ -538,6 +579,14 @@ class DownloadApp:
             )
 
     def __close(self):
+        self.closing = True
+
+        if self.cancel_event is not None:
+            self.cancel_event.set()
+
+        if self.download_manager is not None:
+            self.download_manager.cancel()
+
         if self.__settings_save_job is not None:
             self.root.after_cancel(
                 self.__settings_save_job
@@ -668,14 +717,11 @@ class DownloadApp:
             return
 
         self.downloading = True
+        self.cancel_requested = False
+        self.cancel_event = threading.Event()
+        self.download_manager = None
 
-        self.download_button.config(
-            state="disabled"
-        )
-
-        self.language_selector.config(
-            state="disabled"
-        )
+        self.__update_download_controls()
 
         self.progress["value"] = 0
 
@@ -722,6 +768,59 @@ class DownloadApp:
 
         thread.start()
 
+    def __cancel_download(self):
+        if (
+            not self.downloading
+            or self.cancel_requested
+        ):
+            return
+
+        self.cancel_requested = True
+
+        if self.cancel_event is not None:
+            self.cancel_event.set()
+
+        if self.download_manager is not None:
+            self.download_manager.cancel()
+
+        self.__add_activity(
+            _("Cancelling download...")
+        )
+
+        self.__update_download_controls()
+
+        LOGGER.info(
+            "Download cancellation requested."
+        )
+
+    def __update_download_controls(self):
+        if not hasattr(self, "download_button"):
+            return
+
+        self.download_button.config(
+            state=(
+                "disabled"
+                if self.downloading
+                else "normal"
+            )
+        )
+
+        self.cancel_button.config(
+            state=(
+                "normal"
+                if self.downloading and not self.cancel_requested
+                else "disabled"
+            )
+        )
+
+        self.language_selector.config(
+            state=(
+                "disabled"
+                if self.downloading
+                else "readonly"
+            )
+        )
+
     def __download_worker(
         self,
         url,
@@ -741,8 +840,11 @@ class DownloadApp:
                 ),
                 activity_callback=(
                     self.__activity_callback
-                )
+                ),
+                cancel_event=self.cancel_event
             )
+
+            self.download_manager = manager
 
             final_path = manager.run(
                 path=output_directory,
@@ -753,10 +855,18 @@ class DownloadApp:
                 url=url
             )
 
-            self.root.after(
-                0,
+            self.__schedule_ui(
                 self.__download_finished,
                 final_path
+            )
+
+        except DownloadCancelled:
+            LOGGER.info(
+                "Download cancelled by the user."
+            )
+
+            self.__schedule_ui(
+                self.__download_cancelled
             )
 
         except Exception as error:
@@ -767,11 +877,24 @@ class DownloadApp:
                 type(error).__name__
             )
 
-            self.root.after(
-                0,
+            self.__schedule_ui(
                 self.__download_error,
                 str(error)
             )
+
+    def __schedule_ui(self, callback, *args):
+        if self.closing:
+            return
+
+        try:
+            self.root.after(
+                0,
+                callback,
+                *args
+            )
+
+        except (RuntimeError, tk.TclError):
+            pass
 
     def __progress_callback(
         self,
@@ -779,8 +902,7 @@ class DownloadApp:
         total,
         percent
     ):
-        self.root.after(
-            0,
+        self.__schedule_ui(
             self.__update_progress,
             current,
             total,
@@ -841,8 +963,7 @@ class DownloadApp:
         self,
         text
     ):
-        self.root.after(
-            0,
+        self.__schedule_ui(
             self.status_var.set,
             text
         )
@@ -851,11 +972,17 @@ class DownloadApp:
         self,
         text
     ):
-        self.root.after(
-            0,
+        self.__schedule_ui(
             self.__add_activity,
             text
         )
+
+    def __finish_download(self):
+        self.downloading = False
+        self.cancel_requested = False
+        self.cancel_event = None
+        self.download_manager = None
+        self.__update_download_controls()
 
     def __clear_activity(self):
         self.activity_messages.clear()
@@ -900,15 +1027,7 @@ class DownloadApp:
         self,
         final_path
     ):
-        self.downloading = False
-
-        self.download_button.config(
-            state="normal"
-        )
-
-        self.language_selector.config(
-            state="readonly"
-        )
+        self.__finish_download()
 
         self.progress["value"] = 100
 
@@ -936,15 +1055,7 @@ class DownloadApp:
         self,
         error
     ):
-        self.downloading = False
-
-        self.download_button.config(
-            state="normal"
-        )
-
-        self.language_selector.config(
-            state="readonly"
-        )
+        self.__finish_download()
 
         self.status_var.set(
             _("Download error")
@@ -959,4 +1070,17 @@ class DownloadApp:
         messagebox.showerror(
             _("Error"),
             error
+        )
+
+    def __download_cancelled(self):
+        self.__finish_download()
+
+        self.status_var.set(
+            _("Download cancelled")
+        )
+
+        self.__add_activity(
+            _(
+                "Download cancelled. Reusable segments were preserved."
+            )
         )
