@@ -20,12 +20,12 @@ class DownloadApp:
         self.root = root
 
         self.root.geometry(
-            "720x720"
+            "720x690"
         )
 
         self.root.minsize(
             650,
-            680
+            650
         )
 
         self.downloading = False
@@ -419,8 +419,7 @@ class DownloadApp:
         )
 
         self.activity_frame.pack(
-            fill="both",
-            expand=True,
+            fill="x",
             pady=(15, 0)
         )
 
