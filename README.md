@@ -15,4 +15,4 @@ py -3 tools\compile_translations.py
 ## Budowanie aplikacji
 
 Uruchom `build.cmd`. Gotowy plik zostanie zapisany jako
-`Output\Segment-Downloader.exe`.
+`.output\Segment-Downloader.exe`.

@@ -5,7 +5,7 @@ cd /d "%~dp0"
 
 set "APP_NAME=Segment-Downloader"
 set "ENTRY_POINT=app\main.py"
-set "OUTPUT_DIRECTORY=Output"
+set "OUTPUT_DIRECTORY=.output"
 set "WORK_DIRECTORY=build"
 set "PYTHON_EXE="
 set "PYTHON_ARGS="
