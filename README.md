@@ -1,4 +1,4 @@
-# Segment Downloader [1.1.0]
+# Segment Downloader [1.0.1]
 
 Segment Downloader is a desktop application for downloading files through
 multiple HTTP range requests. It can resume interrupted downloads, retries
