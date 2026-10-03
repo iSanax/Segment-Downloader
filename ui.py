@@ -20,12 +20,12 @@ class DownloadApp:
         self.root = root
 
         self.root.geometry(
-            "720x590"
+            "720x720"
         )
 
         self.root.minsize(
             650,
-            560
+            680
         )
 
         self.downloading = False
@@ -82,6 +82,8 @@ class DownloadApp:
         self.percent_var = tk.StringVar(
             value="0.00%"
         )
+
+        self.activity_messages = []
 
         self.__input_variables = {
             "url": self.url_var,
@@ -366,27 +368,6 @@ class DownloadApp:
             pady=(0, 25)
         )
 
-        # Status
-        ttk.Label(
-            main,
-            text=_("Status:")
-        ).pack(
-            anchor="w"
-        )
-
-        ttk.Label(
-            main,
-            textvariable=self.status_var,
-            font=(
-                "Segoe UI",
-                10,
-                "bold"
-            )
-        ).pack(
-            anchor="w",
-            pady=(5, 15)
-        )
-
         # Pasek
         self.progress = ttk.Progressbar(
             main,
@@ -428,6 +409,53 @@ class DownloadApp:
             side="right"
         )
 
+        self.activity_frame = tk.Frame(
+            main,
+            relief="solid",
+            borderwidth=1,
+            background="white",
+            padx=8,
+            pady=6
+        )
+
+        self.activity_frame.pack(
+            fill="both",
+            expand=True,
+            pady=(15, 0)
+        )
+
+        self.activity_labels = []
+
+        for row_index in range(5):
+            label = tk.Label(
+                self.activity_frame,
+                text="",
+                anchor="w",
+                justify="left",
+                background="white",
+                font=(
+                    "Segoe UI",
+                    10
+                )
+            )
+
+            label.pack(
+                fill="x",
+                anchor="w",
+                pady=2
+            )
+
+            self.activity_labels.append(
+                label
+            )
+
+        self.activity_frame.bind(
+            "<Configure>",
+            self.__resize_activity_labels
+        )
+
+        self.__refresh_activity()
+
     def __change_language(self, event=None):
         selected_language = set_language(
             self.language_var.get()
@@ -442,6 +470,8 @@ class DownloadApp:
             self.status_var.set(
                 _("Ready")
             )
+
+        self.activity_messages.clear()
 
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -662,6 +692,12 @@ class DownloadApp:
             _("Starting...")
         )
 
+        self.__clear_activity()
+
+        self.__add_activity(
+            _("Waiting for the server response...")
+        )
+
         LOGGER.info(
             "Download queued: file=%s%s, threads=%d, "
             "segment_size_kb=%d, output=%s.",
@@ -703,6 +739,9 @@ class DownloadApp:
                 ),
                 status_callback=(
                     self.__status_callback
+                ),
+                activity_callback=(
+                    self.__activity_callback
                 )
             )
 
@@ -809,6 +848,55 @@ class DownloadApp:
             text
         )
 
+    def __activity_callback(
+        self,
+        text
+    ):
+        self.root.after(
+            0,
+            self.__add_activity,
+            text
+        )
+
+    def __clear_activity(self):
+        self.activity_messages.clear()
+        self.__refresh_activity()
+
+    def __add_activity(self, text):
+        self.activity_messages.append(text)
+        del self.activity_messages[:-5]
+        self.__refresh_activity()
+
+    def __refresh_activity(self):
+        if not hasattr(self, "activity_labels"):
+            return
+
+        for index, label in enumerate(
+            self.activity_labels
+        ):
+            if index < len(self.activity_messages):
+                text = (
+                    f"\u2022 {self.activity_messages[index]}"
+                )
+
+            else:
+                text = ""
+
+            label.config(
+                text=text
+            )
+
+    def __resize_activity_labels(self, event):
+        wrap_length = max(
+            event.width - 20,
+            100
+        )
+
+        for label in self.activity_labels:
+            label.config(
+                wraplength=wrap_length
+            )
+
     def __download_finished(
         self,
         final_path
@@ -861,6 +949,12 @@ class DownloadApp:
 
         self.status_var.set(
             _("Download error")
+        )
+
+        self.__add_activity(
+            _("Download stopped: {error}").format(
+                error=error
+            )
         )
 
         messagebox.showerror(

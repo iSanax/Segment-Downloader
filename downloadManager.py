@@ -18,7 +18,8 @@ class DownloadManager:
     def __init__(
         self,
         progress_callback=None,
-        status_callback=None
+        status_callback=None,
+        activity_callback=None
     ):
         self.headers = {
             "User-Agent": "Mozilla/5.0"
@@ -26,10 +27,15 @@ class DownloadManager:
 
         self.progress_callback = progress_callback
         self.status_callback = status_callback
+        self.activity_callback = activity_callback
 
     def __set_status(self, text):
         if self.status_callback:
             self.status_callback(text)
+
+    def __set_activity(self, text):
+        if self.activity_callback:
+            self.activity_callback(text)
 
     def __set_progress(self, current, total):
         if total <= 0:
@@ -136,6 +142,10 @@ class DownloadManager:
             thread_count=thread_count
         )
 
+        self.__set_activity(
+            _("All segments downloaded. Merging file...")
+        )
+
         self.__set_status(
             _("Merging segments...")
         )
@@ -175,6 +185,10 @@ class DownloadManager:
 
         self.__set_status(
             _("Download completed")
+        )
+
+        self.__set_activity(
+            _("File saved successfully.")
         )
 
         LOGGER.info(
@@ -388,6 +402,7 @@ class DownloadManager:
     def __download_segment(
         self,
         index,
+        segment_count,
         start,
         end,
         url,
@@ -413,6 +428,17 @@ class DownloadManager:
             # Segment jest już kompletny.
             if current_size == expected_size:
                 progress_callback(current_size)
+
+                self.__set_activity(
+                    _(
+                        "Segment {index}/{segment_count} "
+                        "was already downloaded."
+                    ).format(
+                        index=index + 1,
+                        segment_count=segment_count
+                    )
+                )
+
                 return
 
             # Plik jest większy niż powinien.
@@ -440,6 +466,16 @@ class DownloadManager:
                     current_size = 0
 
                 if current_size == expected_size:
+                    self.__set_activity(
+                        _(
+                            "Segment {index}/{segment_count} "
+                            "was already downloaded."
+                        ).format(
+                            index=index + 1,
+                            segment_count=segment_count
+                        )
+                    )
+
                     return
 
                 if current_size > expected_size:
@@ -456,6 +492,18 @@ class DownloadManager:
 
                 headers["Range"] = (
                     f"bytes={resume_start}-{end}"
+                )
+
+                self.__set_activity(
+                    _(
+                        "Segment {index}/{segment_count}: "
+                        "request attempt {attempt}/{retries}..."
+                    ).format(
+                        index=index + 1,
+                        segment_count=segment_count,
+                        attempt=attempt,
+                        retries=retries
+                    )
                 )
 
                 response = requests.get(
@@ -552,6 +600,15 @@ class DownloadManager:
                 )
 
                 if actual_size == expected_size:
+                    self.__set_activity(
+                        _(
+                            "Segment {index}/{segment_count} downloaded."
+                        ).format(
+                            index=index + 1,
+                            segment_count=segment_count
+                        )
+                    )
+
                     return
 
                 if actual_size > expected_size:
@@ -578,7 +635,33 @@ class DownloadManager:
                 )
 
             except Exception as error:
+                error_description = str(error).strip()
+
+                if (
+                    isinstance(error, requests.RequestException)
+                    or not error_description
+                ):
+                    error_description = type(error).__name__
+
+                error_description = (
+                    error_description
+                    .replace("\r", " ")
+                    .replace("\n", " ")
+                )
+
                 if attempt == retries:
+                    self.__set_activity(
+                        _(
+                            "Segment {index}/{segment_count} failed after "
+                            "{retries} attempts ({error})."
+                        ).format(
+                            index=index + 1,
+                            segment_count=segment_count,
+                            retries=retries,
+                            error=error_description
+                        )
+                    )
+
                     LOGGER.error(
                         "Segment %d failed after %d attempts (%s).",
                         index,
@@ -587,6 +670,19 @@ class DownloadManager:
                     )
 
                     raise
+
+                self.__set_activity(
+                    _(
+                        "Segment {index}/{segment_count}: attempt "
+                        "{attempt}/{retries} failed ({error}). Retrying..."
+                    ).format(
+                        index=index + 1,
+                        segment_count=segment_count,
+                        attempt=attempt,
+                        retries=retries,
+                        error=error_description
+                    )
+                )
 
                 LOGGER.warning(
                     "Segment %d failed on attempt %d/%d (%s).",
@@ -611,6 +707,7 @@ class DownloadManager:
         )
 
         downloaded_bytes = 0
+        segment_count = len(segments)
 
         progress_lock = threading.Lock()
 
@@ -656,6 +753,7 @@ class DownloadManager:
                 future = executor.submit(
                     self.__download_segment,
                     index,
+                    segment_count,
                     start,
                     end,
                     url,

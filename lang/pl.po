@@ -126,3 +126,30 @@ msgstr "Liczba wątków musi być liczbą całkowitą większą od 0."
 
 msgid "Thread count:"
 msgstr "Liczba wątków:"
+
+msgid "Waiting for the server response..."
+msgstr "Oczekiwanie na odpowiedź serwera..."
+
+msgid "All segments downloaded. Merging file..."
+msgstr "Wszystkie segmenty pobrane. Łączenie pliku..."
+
+msgid "File saved successfully."
+msgstr "Plik został pomyślnie zapisany."
+
+msgid "Segment {index}/{segment_count} was already downloaded."
+msgstr "Segment {index}/{segment_count} był już pobrany."
+
+msgid "Segment {index}/{segment_count}: request attempt {attempt}/{retries}..."
+msgstr "Segment {index}/{segment_count}: próba połączenia {attempt}/{retries}..."
+
+msgid "Segment {index}/{segment_count} downloaded."
+msgstr "Segment {index}/{segment_count} pobrany."
+
+msgid "Segment {index}/{segment_count} failed after {retries} attempts ({error})."
+msgstr "Segment {index}/{segment_count} nie powiódł się po {retries} próbach ({error})."
+
+msgid "Segment {index}/{segment_count}: attempt {attempt}/{retries} failed ({error}). Retrying..."
+msgstr "Segment {index}/{segment_count}: próba {attempt}/{retries} nie powiodła się ({error}). Ponawianie..."
+
+msgid "Download stopped: {error}"
+msgstr "Pobieranie zatrzymane: {error}"
