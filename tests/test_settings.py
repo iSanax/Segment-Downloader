@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from settings import DEFAULT_SETTINGS, SettingsManager
+from app.settings import DEFAULT_SETTINGS, SettingsManager
 
 
 class SettingsManagerTests(unittest.TestCase):

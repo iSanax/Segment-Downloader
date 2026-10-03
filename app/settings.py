@@ -8,8 +8,9 @@ from pathlib import Path
 
 APP_NAME = "Segment Downloader"
 SETTINGS_FILE_NAME = "settings.json"
-_LEGACY_SETTINGS_PATH = Path(__file__).with_name(
-    SETTINGS_FILE_NAME
+_LEGACY_SETTINGS_PATH = (
+    Path(__file__).resolve().parent.parent
+    / SETTINGS_FILE_NAME
 )
 LOGGER = logging.getLogger(
     "SegmentDownloader.settings"

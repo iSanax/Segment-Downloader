@@ -5,8 +5,8 @@ import sys
 import threading
 from pathlib import Path
 
-from logger import get_logger
-from settings import get_app_directory, get_temporary_directory
+from app.logger import get_logger
+from app.settings import get_app_directory, get_temporary_directory
 
 
 LOGGER = get_logger(__name__)

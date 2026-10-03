@@ -8,9 +8,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
-import downloadManager
 import requests
-from downloadManager import (
+from app import download_manager
+from app.download_manager import (
     DownloadCancelled,
     DownloadManager,
     RemoteFileInfo
@@ -158,11 +158,11 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
 
         self.path_patches = (
             patch(
-                "downloadManager.get_app_directory",
+                "app.download_manager.get_app_directory",
                 return_value=self.app_directory
             ),
             patch(
-                "downloadManager.get_temporary_directory",
+                "app.download_manager.get_temporary_directory",
                 return_value=self.app_directory / "tmp"
             )
         )
@@ -441,7 +441,7 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
         )
 
         with patch.object(
-            downloadManager,
+            download_manager,
             "RETRY_DELAYS",
             (0, 0, 0, 0)
         ):
@@ -473,7 +473,7 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
         )
 
         with patch.object(
-            downloadManager,
+            download_manager,
             "RETRY_DELAYS",
             (0, 0, 0, 0)
         ):
@@ -532,7 +532,7 @@ class DownloadManagerIntegrationTests(unittest.TestCase):
             return original_attempt(**kwargs)
 
         with patch.object(
-            downloadManager,
+            download_manager,
             "RETRY_DELAYS",
             (0, 0, 0, 0)
         ):

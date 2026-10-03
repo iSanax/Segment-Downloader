@@ -1,8 +1,17 @@
+import sys
 import tkinter as tk
+from pathlib import Path
 
-from downloadManager import DownloadManager
-from logger import configure_logging, get_logger
-from ui import DownloadApp
+
+if __package__ in {None, ""}:
+    sys.path.insert(
+        0,
+        str(Path(__file__).resolve().parent.parent)
+    )
+
+from app.download_manager import DownloadManager
+from app.logger import configure_logging, get_logger
+from app.ui import DownloadApp
 
 
 __all__ = ["DownloadApp", "DownloadManager", "main"]

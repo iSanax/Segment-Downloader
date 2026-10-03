@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from temporaryFiles import TemporaryFilesManager
+from app.temporary_files import TemporaryFilesManager
 
 
 class TemporaryFilesManagerTests(unittest.TestCase):

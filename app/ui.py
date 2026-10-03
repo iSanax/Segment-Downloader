@@ -4,11 +4,11 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from downloadManager import DownloadCancelled, DownloadManager
-from logger import get_logger
-from settings import SettingsManager
-from temporaryFiles import TemporaryFilesManager
-from translator import set_language, translate as _
+from app.download_manager import DownloadCancelled, DownloadManager
+from app.logger import get_logger
+from app.settings import SettingsManager
+from app.temporary_files import TemporaryFilesManager
+from app.translator import set_language, translate as _
 
 
 LOGGER = get_logger(__name__)

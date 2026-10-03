@@ -13,9 +13,9 @@ from urllib.parse import urlsplit
 import requests
 from requests.adapters import HTTPAdapter
 
-from logger import get_logger
-from settings import get_app_directory, get_temporary_directory
-from translator import translate as _
+from app.logger import get_logger
+from app.settings import get_app_directory, get_temporary_directory
+from app.translator import translate as _
 
 
 LOGGER = get_logger(__name__)

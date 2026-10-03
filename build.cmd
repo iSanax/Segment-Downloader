@@ -4,7 +4,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 set "APP_NAME=Segment-Downloader"
-set "ENTRY_POINT=main.py"
+set "ENTRY_POINT=app\main.py"
 set "OUTPUT_DIRECTORY=Output"
 set "WORK_DIRECTORY=build"
 set "PYTHON_EXE="
@@ -64,7 +64,7 @@ if errorlevel 1 (
 echo.
 echo [2/4] Compiling translations...
 
-"%PYTHON_EXE%" %PYTHON_ARGS% compile_translations.py
+"%PYTHON_EXE%" %PYTHON_ARGS% tools\compile_translations.py
 
 if errorlevel 1 (
     echo ERROR: Translation compilation failed.
@@ -93,6 +93,7 @@ echo [3/4] Building a single executable...
     --distpath "%OUTPUT_DIRECTORY%" ^
     --workpath "%WORK_DIRECTORY%" ^
     --specpath "%WORK_DIRECTORY%" ^
+    --paths "%CD%" ^
     --add-data "%CD%\lang\bin;lang\bin" ^
     "%ENTRY_POINT%"
 

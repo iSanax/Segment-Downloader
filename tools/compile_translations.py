@@ -3,7 +3,7 @@ import struct
 from pathlib import Path
 
 
-PROJECT_DIRECTORY = Path(__file__).resolve().parent
+PROJECT_DIRECTORY = Path(__file__).resolve().parent.parent
 SOURCE_DIRECTORY = PROJECT_DIRECTORY / "lang"
 OUTPUT_DIRECTORY = SOURCE_DIRECTORY / "bin"
 

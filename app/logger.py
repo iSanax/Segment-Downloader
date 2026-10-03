@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from settings import get_app_directory
+from app.settings import get_app_directory
 
 
 LOGGER_NAME = "SegmentDownloader"

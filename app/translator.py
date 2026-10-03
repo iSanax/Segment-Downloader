@@ -6,7 +6,7 @@ from pathlib import Path
 SUPPORTED_LANGUAGES = ("en", "pl")
 DEFAULT_LANGUAGE = "en"
 LANG_DIRECTORY = (
-    Path(__file__).resolve().parent
+    Path(__file__).resolve().parent.parent
     / "lang"
     / "bin"
 )
