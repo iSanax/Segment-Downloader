@@ -118,7 +118,9 @@ DEFAULT_SETTINGS = {
     "language": get_default_language(),
     "output_directory": str(
         get_default_output_directory()
-    )
+    ),
+    "window_x": "",
+    "window_y": ""
 }
 
 

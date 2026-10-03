@@ -1,3 +1,5 @@
+import ctypes
+import sys
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -10,6 +12,12 @@ from translator import set_language, translate as _
 
 
 LOGGER = get_logger(__name__)
+WINDOW_WIDTH = 720
+WINDOW_HEIGHT = 690
+MINIMUM_WINDOW_WIDTH = 650
+MINIMUM_WINDOW_HEIGHT = 650
+MINIMUM_VISIBLE_WIDTH = 80
+MINIMUM_VISIBLE_HEIGHT = 50
 
 
 # ==========================================================
@@ -20,13 +28,9 @@ class DownloadApp:
     def __init__(self, root):
         self.root = root
 
-        self.root.geometry(
-            "720x690"
-        )
-
         self.root.minsize(
-            650,
-            650
+            MINIMUM_WINDOW_WIDTH,
+            MINIMUM_WINDOW_HEIGHT
         )
 
         self.downloading = False
@@ -37,6 +41,9 @@ class DownloadApp:
 
         self.settings_manager = SettingsManager()
         saved_settings = self.settings_manager.load()
+        self.__set_initial_window_position(
+            saved_settings
+        )
         self.__settings_save_job = None
         self.__temp_size_job = None
         self.__temp_size_scan_running = False
@@ -111,6 +118,11 @@ class DownloadApp:
 
         self.__create_ui()
         self.__watch_settings()
+        self.root.bind(
+            "<Configure>",
+            self.__window_configured,
+            add="+"
+        )
         self.__schedule_temp_size_refresh(
             delay=0
         )
@@ -646,6 +658,123 @@ class DownloadApp:
                 selected_directory
             )
 
+    def __set_initial_window_position(self, saved_settings):
+        saved_position = self.__read_saved_window_position(
+            saved_settings
+        )
+
+        if (
+            saved_position is not None
+            and self.__window_position_is_visible(
+                *saved_position
+            )
+        ):
+            window_x, window_y = saved_position
+
+        else:
+            window_x = max(
+                (self.root.winfo_screenwidth() - WINDOW_WIDTH) // 2,
+                0
+            )
+            window_y = max(
+                (self.root.winfo_screenheight() - WINDOW_HEIGHT) // 2,
+                0
+            )
+
+        self.__window_x = window_x
+        self.__window_y = window_y
+
+        self.root.geometry(
+            f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}"
+            f"{window_x:+d}{window_y:+d}"
+        )
+
+    @staticmethod
+    def __read_saved_window_position(saved_settings):
+        try:
+            window_x = int(
+                saved_settings.get("window_x", "")
+            )
+            window_y = int(
+                saved_settings.get("window_y", "")
+            )
+
+        except (TypeError, ValueError):
+            return None
+
+        return window_x, window_y
+
+    def __window_position_is_visible(self, window_x, window_y):
+        (
+            screen_x,
+            screen_y,
+            screen_width,
+            screen_height
+        ) = self.__virtual_screen_bounds()
+
+        visible_width = max(
+            0,
+            min(
+                window_x + WINDOW_WIDTH,
+                screen_x + screen_width
+            ) - max(window_x, screen_x)
+        )
+        visible_height = max(
+            0,
+            min(
+                window_y + WINDOW_HEIGHT,
+                screen_y + screen_height
+            ) - max(window_y, screen_y)
+        )
+
+        return (
+            visible_width >= MINIMUM_VISIBLE_WIDTH
+            and visible_height >= MINIMUM_VISIBLE_HEIGHT
+        )
+
+    def __virtual_screen_bounds(self):
+        if sys.platform == "win32":
+            try:
+                user32 = ctypes.windll.user32
+
+                return (
+                    user32.GetSystemMetrics(76),
+                    user32.GetSystemMetrics(77),
+                    user32.GetSystemMetrics(78),
+                    user32.GetSystemMetrics(79)
+                )
+
+            except (AttributeError, OSError):
+                pass
+
+        return (
+            self.root.winfo_vrootx(),
+            self.root.winfo_vrooty(),
+            self.root.winfo_vrootwidth(),
+            self.root.winfo_vrootheight()
+        )
+
+    def __window_configured(self, event):
+        if (
+            self.closing
+            or event.widget is not self.root
+            or self.root.state() != "normal"
+        ):
+            return
+
+        window_x = self.root.winfo_x()
+        window_y = self.root.winfo_y()
+
+        if not self.__window_position_is_visible(
+            window_x,
+            window_y
+        ):
+            return
+
+        self.__window_x = window_x
+        self.__window_y = window_y
+        self.__schedule_settings_save()
+
     def __open_temporary_directory(self):
         try:
             self.temp_files_manager.open()
@@ -860,6 +989,12 @@ class DownloadApp:
             for key, variable
             in self.__input_variables.items()
         }
+        settings["window_x"] = str(
+            self.__window_x
+        )
+        settings["window_y"] = str(
+            self.__window_y
+        )
 
         try:
             self.settings_manager.save(
