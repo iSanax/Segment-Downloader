@@ -106,13 +106,8 @@ def get_default_language():
 
 
 DEFAULT_SETTINGS = {
-    "url": (
-        "https://edge1-vienna-sprintcdn.owphbf24.com/download/05/11945/"
-        "p75mb60tn5t6_x/BLACK_TORCH_S01E07_Lektor_PL_mkv.mp4?"
-        "t=jrdlTmN-b9ZgVixIShAkyRv4g5_SSNmPwNtKSpEDgbo&"
-        "s=1790977439&e=10800&f=59727226&srv=1065&asn=5617&sp=4000"
-    ),
-    "file_name": "Test s01e01",
+    "url": "",
+    "file_name": "",
     "extension": ".mp4",
     "thread_count": "128",
     "segment_size_kb": "1024",
