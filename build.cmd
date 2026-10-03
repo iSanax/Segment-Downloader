@@ -93,7 +93,7 @@ echo [3/4] Building a single executable...
     --distpath "%OUTPUT_DIRECTORY%" ^
     --workpath "%WORK_DIRECTORY%" ^
     --specpath "%WORK_DIRECTORY%" ^
-    --add-data "lang\bin;lang\bin" ^
+    --add-data "%CD%\lang\bin;lang\bin" ^
     "%ENTRY_POINT%"
 
 if errorlevel 1 (
